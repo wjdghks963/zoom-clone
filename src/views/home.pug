@@ -8,7 +8,16 @@ html(lang="en")
         title Zuum
     body 
         header 
-            h1 Noom 
+            h1 Zuum 
         main 
-            h2 Welcome to Zuum
+            form#nick
+                input(type="text", placeholder="메시지 입력", required) 
+                button Save
+
+            ul
+            form#message
+                input(type="text", placeholder="메시지 입력", required) 
+                button Send
+
+
         script(src="/public/js/app.js")
