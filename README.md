@@ -183,15 +183,35 @@ navigator.mediaDevices.enumerateDevices();
 
 # webRTC
 
-실시간으로 영상을 통해 소통이 가능하게 해주는 framework
+실시간으로 영상을 통해 소통이 가능하게 해주는 기술의 웹 표준
 
-### 특징
+### peer to peer
 
-1. peer to peer
-   서버에 들려서 socket들을 전달하는 socket.io와 다르게 서버가 필요없이 client끼리의 연결이 가능하다.
-   하지만 아래와 같은 이유로 서버가 필요하다.
+서버에 들려서 socket들을 전달하는 socket.io와 다르게 서버가 필요없이 client끼리의 연결이 가능하다.
+하지만 아래와 같은 이유로 서버가 필요하다.
 
-   - 브라우저의 위치(ip)
-     서로 연결 시켜야할 상대가 누구인지 알아야함
-   - 유저의 setting, configuration
-     유저가 어떤 설정을 가지고 있는지 알아야함
+- 브라우저의 위치(ip)
+  서로 연결 시켜야할 상대가 누구인지 알아야함
+- 유저의 setting, configuration
+  유저가 어떤 설정을 가지고 있는지 알아야함
+  ex) `getUserMedia() ...`
+
+#### ping pong
+
+offer와 answer을 서로 저장하고 보내면서 상대에 대한 정보를 받는다.
+
+offer는 초대장과 같다. object의 형태를하고 있으며 sdp를 가지고 있다.
+
+```javascript
+let myPeerConnection = new RTCPeerConnection();
+myStream
+  .getTracks()
+  .forEach((track) => myPeerConnection.addTrack(track, myStream));
+
+const offer = await myPeerConnection.createOffer();
+myPeerConnection.setLocalDescription(offer);
+```
+
+`setLocalDescription`은 offer를 받았을때 해당 offer로 연결을 구성해야하는데 연결과 관련된 로컬 설명을 변경하는 메소드이다.
+
+`setRemoteDescription`은 offer에 대한 answer를 보내기 전에 other peer의 description을 세팅하는 것을 말한다.
