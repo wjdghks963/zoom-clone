@@ -119,3 +119,79 @@ DB를 통한 server들과의 연결을 통해서 다른 서버에 있는 socket�
 ```javascript
 console.log(wsServer.sockets.adapter); // Map안에 room들에 대한 정보가 있는 Set들이 들어가 있다.
 ```
+
+# video & mike
+
+먼저 비디오와 오디오의 사용 허가를 받는다.
+
+```javascript
+let stream;
+
+try {
+    stream = await navigator.mediaDevices.getUserMedia({
+    audio: true,
+    vide: true,
+  });
+} catch (e) {
+  console.log(e);
+}
+
+stream을 video태그 안에 넣어주면 된다.
+```
+
+<br/>
+`getUesrMedia`안에 들어가는 매개변수는 constraints라는 이름의 객체이다.
+
+```javascript
+// basic
+{audio: true, video: true}
+// 비디오 해상도 설정 가능
+{audio: true, video:{
+    width : 1280,
+    height : 720
+}}
+// mobile 전 후면 카메라
+{audio: true, video:{
+    // 전면
+     facingMode :"user"
+    // 후면
+     facingMode:{
+        exact:"environment"
+     }
+}}
+```
+
+이 객체 안에는 Tracks라는 method가 존재하는데 이름에 맞게 사용한다면 조작이 가능하다.
+유저가 지금 이용중인 기계의 정보와 상태가 array형태로 나온다.
+array 안에 들어있는 값의 형태는 object이다.
+object의 이름은 MediaStreamTrack
+
+```javascript
+stream.getAudioTracks(); // array 형태의 데이터로 나온다
+stream.getVideoTracks();
+```
+
+모든 컴퓨터에 연결된 장치의 output input에 대한 정보가 들어있는 array 형태
+
+```javascript
+navigator.mediaDevices.enumerateDevices();
+```
+
+</br>
+</br>
+</hr>
+
+# webRTC
+
+실시간으로 영상을 통해 소통이 가능하게 해주는 framework
+
+### 특징
+
+1. peer to peer
+   서버에 들려서 socket들을 전달하는 socket.io와 다르게 서버가 필요없이 client끼리의 연결이 가능하다.
+   하지만 아래와 같은 이유로 서버가 필요하다.
+
+   - 브라우저의 위치(ip)
+     서로 연결 시켜야할 상대가 누구인지 알아야함
+   - 유저의 setting, configuration
+     유저가 어떤 설정을 가지고 있는지 알아야함
