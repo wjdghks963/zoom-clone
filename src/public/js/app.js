@@ -6,7 +6,6 @@ const camerBtn = document.getElementById("camera");
 const camerasSelect = document.getElementById("cameras");
 const call = document.getElementById("call");
 
-
 call.hidden = true;
 
 let myStream;
@@ -14,6 +13,7 @@ let muted = false;
 let cameraOff = false;
 let roomName;
 let myPeerConnection;
+let myDataChannel;
 
 async function getCameras() {
   try {
@@ -85,11 +85,18 @@ function handleCameraClick() {
 
 async function handleCameraChange() {
   await getMedia(camerasSelect.value);
+  if (myPeerConnection) {
+    const videoTrack = myStream.getVideoTracks()[0];
+    const videoSender = myPeerConnection
+      .getSenders()
+      .find((sender) => sender.track.kind === "video");
+    videoSender.replaceTrack(videoTrack);
+  }
 }
 
 muteBtn.addEventListener("click", handleMuteClick);
 camerBtn.addEventListener("click", handleCameraClick);
-camerasSelect.addEventListener("input", handlecameraChange);
+camerasSelect.addEventListener("input", handleCameraChange);
 
 const welcom = document.getElementById("welcome");
 const welcomForm = welcom.querySelector("form");
@@ -112,31 +119,48 @@ async function handleWelcomeSubmit(e) {
 
 welcomForm.addEventListener("submit", handleWelcomeSubmit);
 
-
 // Socket
 
-socket.on("welcome", () => {
+socket.on("welcome", async () => {
+  myDataChannel = myPeerConnection.createDataChannel("chat");
+  makeConnection.addEventListener("message", console.log);
   const offer = await myPeerConnection.createOffer();
   myPeerConnection.setLocalDescription(offer);
-  socket.emit("offer", offer , roomName);
+  socket.emit("offer", offer, roomName);
 });
 
-socket.on("offer", async offer =>{
+socket.on("offer", async (offer) => {
+  myPeerConnection.addEventListener("datachannel", (event) => {
+    myDataChannel = event.channel;
+    myDataChannel.addEventListener("message", console.log);
+  });
   myPeerConnection.setRemoteDescription(offer);
   const answer = await myPeerConnection.createAnswer();
   myPeerConnection.setLocalDescription(answer);
   socket.emit("answer", answer, roomName);
-})
+});
 
-socket.on("answer", answer=>{
-  answer.setRemoteDescription(answer);
-})
+socket.on("answer", (answer) => {
+  myPeerConnection.setRemoteDescription(answer);
+});
 
+socket.on("ice", (ice) => {
+  myPeerConnection.addIceCandidate(ice);
+});
 
 // RTC
 function makeConnection() {
-   myPeerConnection = new RTCPeerConnection();
+  myPeerConnection = new RTCPeerConnection();
+  makeConnection.addEventListener("icecandidate", handleIce);
+  myPeerConnection.addEventListener("track", (data) => {
+    const peersStream = document.getElementById("peersStream");
+    peersStream.srcObject = data.streams[0];
+  });
   myStream
     .getTracks()
     .forEach((track) => myPeerConnection.addTrack(track, myStream));
+}
+
+function handleIce(data) {
+  socket.emit("ice", data.candidate, roomName);
 }

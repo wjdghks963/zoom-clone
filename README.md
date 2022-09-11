@@ -215,3 +215,20 @@ myPeerConnection.setLocalDescription(offer);
 `setLocalDescription`은 offer를 받았을때 해당 offer로 연결을 구성해야하는데 연결과 관련된 로컬 설명을 변경하는 메소드이다.
 
 `setRemoteDescription`은 offer에 대한 answer를 보내기 전에 other peer의 description을 세팅하는 것을 말한다.
+
+#### Track
+
+피어 연결에 추가될 미디어 트랙을 나타내는 MediaStreamTrack 객체
+https://developer.mozilla.org/ko/docs/Web/API/MediaStreamTrack
+
+#### iceCandidate
+
+인터넷 연결 생성상태
+webRTC에 필요한 프로토콜들(멀리 떨어진 장치와 통신할 수 있게끔)
+
+이 과정은 다수의 후보들이 각각의 연결에서 제안되고 서로의 동의하에 하나를 선택한다. 그리고 그것을 소통 방식에 사용한다.
+
+#### Sender
+
+상대방(peer)에게 보내진 media stream track(video | audio)을 컨트롤하게 해준다.
+ex) 나의 음소거상태 등...
